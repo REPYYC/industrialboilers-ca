@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.wrangler/
+.netlify/
+.env*
+output/
+.playwright-cli/

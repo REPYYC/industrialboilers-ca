@@ -1,0 +1,27 @@
+name: Deploy Cloudflare Pages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: 1b7e37300ea7889f97685c7d8d7c30b4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify deployment credential is configured
+        run: test -n "$CLOUDFLARE_API_TOKEN" || (echo 'Add a Cloudflare Pages Edit API token as CLOUDFLARE_API_TOKEN in repository secrets.' && exit 1)
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check
+      - run: npx wrangler pages deploy dist --project-name industrialboilers-ca --branch main --commit-dirty=false
